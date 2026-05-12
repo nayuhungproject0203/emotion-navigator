@@ -77,18 +77,5 @@ Key highlights of this project:
 - TypeScript
 - CSS / Front-end styling
 - GitHub Pages for deployment
-
----
-
-## 專案啟動方式 | Local Development | ローカル開発
-
-### 1. 安裝依賴套件 / Install dependencies / 依存関係のインストール
-
-請先確認已安裝 Node.js，然後執行：
-
-Make sure Node.js is installed, then run:
-
-Node.js がインストールされていることを確認し、以下を実行してください。
-
-```bash
-npm install
+### Demo
+https://nayuhungproject0203.github.io/emotion-narrowing-tool/ 

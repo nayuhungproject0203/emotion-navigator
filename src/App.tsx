@@ -5,7 +5,7 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, RotateCcw, Copy, Check, Heart, Info, Download, PenLine, Lightbulb, Sun, Compass, Navigation, Target, Circle, MoveRight, Moon } from 'lucide-react';
+import { RotateCcw, Copy, Check, Heart, Info, Download, PenLine, Lightbulb, Sun, Navigation, Target, MoveRight } from 'lucide-react';
 import { toPng } from 'html-to-image';
 import { emotionTree, type EmotionNode } from "./data/emotions";
 import { Locale, t } from "./i18n";
@@ -14,108 +14,9 @@ import { Locale, t } from "./i18n";
 type Step = 'home' | 'about' | 'level1' | 'level2' | 'level3' | 'result' | 'reflection' | 'reflectionResult';
 type ReflectionPath = 'control' | 'grey' | 'acceptance' | 'savor_record' | 'savor_insight' | 'savor_action' | null;
 
-// --- Components ---
-
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div className="min-h-[100dvh] text-slate-200 font-sans selection:bg-blue-500/30 selection:text-white overflow-x-hidden w-full">
-    <div className="starfield" />
-    {/* Subtle orbital lines */}
-    <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-20 orbital-ring">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] aspect-square border border-white/10 rounded-full" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100%] aspect-square border border-white/5 rounded-full" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[50%] aspect-square border border-white/10 rounded-full" />
-    </div>
-    <div className="max-w-md w-full mx-auto min-h-[100dvh] flex flex-col p-4 sm:p-8 relative z-10">
-      {children}
-    </div>
-  </div>
-);
-
-const Header: React.FC<{ 
-  onBack?: () => void; 
-  showBack: boolean; 
-  theme: 'dark' | 'light'; 
-  onToggleTheme: () => void;
-  locale: Locale;
-  onToggleLocale: (l: Locale) => void;
-}> = ({ onBack, showBack, theme, onToggleTheme, locale, onToggleLocale }) => (
-  <header className="flex items-center justify-between mb-6 sm:mb-12 h-10 shrink-0 z-20 gap-2 w-full">
-    <div className="flex items-center gap-2 shrink-0">
-      {showBack && (
-        <button
-          onClick={onBack}
-          className="p-2 -ml-2 rounded-lg hover:bg-white/5 transition-colors flex items-center gap-1 sm:gap-2 text-sm font-medium text-slate-400"
-          aria-label={t(locale, 'common.back')}
-        >
-          <ChevronLeft size={18} />
-          <span className="tracking-widest uppercase text-[10px]">{t(locale, 'common.back')}</span>
-        </button>
-      )}
-      {!showBack && (
-        <div className="flex items-center gap-2 sm:gap-3 text-blue-400 shrink-0">
-          <div className="relative hidden sm:block">
-            <Compass size={20} className="animate-pulse" />
-            <div className="absolute inset-0 bg-blue-400/20 blur-lg rounded-full" />
-          </div>
-          <span className="font-bold tracking-[0.1em] sm:tracking-[0.2em] uppercase text-xs sm:text-sm truncate">{t(locale, 'brand')}</span>
-        </div>
-      )}
-    </div>
-
-    <div className="flex items-center gap-1 sm:gap-2">
-      {/* Language Switcher */}
-      <div className="flex items-center bg-white/5 rounded-full p-1 mr-1 sm:mr-2">
-        {(['zh-TW', 'ja', 'en'] as Locale[]).map((l) => (
-          <button
-            key={l}
-            onClick={() => onToggleLocale(l)}
-            className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all ${
-              locale === l
-                ? "bg-blue-500/20 text-blue-400 shadow-sm"
-                : "text-slate-500 hover:text-slate-300"
-            }`}
-          >
-            {l === 'zh-TW' ? '繁' : l === 'ja' ? '日' : 'EN'}
-          </button>
-        ))}
-      </div>
-
-      <button
-        onClick={onToggleTheme}
-        className="p-2 rounded-full glass-button text-slate-400 hover:text-blue-400 transition-colors"
-        aria-label="Toggle Theme"
-      >
-        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-      </button>
-    </div>
-  </header>
-);
-
-const EmotionButton: React.FC<{
-  label: string;
-  onClick: () => void;
-  delay?: number;
-}> = ({ label, onClick, delay = 0 }) => (
-  <motion.button
-    initial={{ opacity: 0, x: -10 }}
-    animate={{ opacity: 1, x: 0 }}
-    transition={{ delay, duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-    whileHover={{ x: 4 }}
-    whileTap={{ scale: 0.98 }}
-    onClick={onClick}
-    className="w-full p-4 sm:p-5 mb-2 sm:mb-3 glass-button rounded-xl text-left group relative overflow-hidden"
-  >
-    <div className="flex items-center justify-between relative z-10">
-      <div className="flex items-center gap-3 sm:gap-4">
-        <div className="w-1.5 h-1.5 shrink-0 rounded-full bg-blue-500/40 group-hover:bg-blue-400 transition-colors shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-        <span className="text-base sm:text-lg font-light tracking-wide text-slate-200 group-hover:text-white transition-colors break-words">{label}</span>
-      </div>
-      <MoveRight size={18} className="text-slate-600 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
-    </div>
-    {/* Subtle scanline effect on hover */}
-    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/5 to-blue-500/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-  </motion.button>
-);
+import Layout from './components/Layout';
+import Header from './components/Header';
+import EmotionButton from './components/EmotionButton';
 
 export default function App() {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
